@@ -65,6 +65,29 @@ class LibrosController{
         }   
     }
 
+    async update(req, res) {
+        try{
+            const libro = req.body;
+            const id_libro = parseInt(libro.id);
+            if (!libro.id || !libro.nombre || !libro.autor || !libro.categoria || !libro.año_publicacion || !libro.ISBN) {
+                res.status(400).json({ "Error": "Todos los campos deben estar completos." });
+            } else {
+
+                const [checkResult] = await pool.query("SELECT id FROM libros WHERE id=?", [id_libro]);
+
+                if (checkResult[0]) {
+                    await pool.query(`UPDATE libros SET nombre=?, autor=?, categoria=?, año_publicacion=?, ISBN=? WHERE id=?`, [libro.nombre, libro.autor, libro.categoria, libro.año_publicacion, libro.ISBN, id_libro]);
+                    res.json({ "Aviso": `Libro con ID ${id_libro} ha sido actualizado.` });
+                } else {
+                    res.status(404).json({ Error: `No se ha encontrado un libro con el ID especificado.` });
+                }
+            }
+        } catch (e) {
+            console.log(e);
+            res.status(500).json({ "Error": "Hubo un fallo al actualizar el libro." });
+        }
+    }
+
 }
 
 export const libro = new LibrosController();
